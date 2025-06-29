@@ -22,6 +22,11 @@ export class AllPokemonsController {
       search,
     );
   }
+  @Get('count')
+  async count(): Promise<{ count: number }> {
+    const count = await this.service.count();
+    return { count };
+  }
 
   @Get(':id')
   async getById(@Param('id') id: string): Promise<Pokemon | null> {

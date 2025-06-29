@@ -41,7 +41,7 @@ async function main() {
     const pokemon = {
       id: details.id,
       name: details.name,
-      image: details.sprites.front_default,
+      image: details.sprites.other?.['official-artwork']?.front_default,
       description,
       powerLevel: details.base_experience,
       HP: getStat(details.stats, 'hp'),
