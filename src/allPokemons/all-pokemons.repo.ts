@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, FilterQuery } from 'mongoose';
 import { Pokemon } from '../types/pokemon.types';
 
 @Injectable()
@@ -17,7 +17,7 @@ export class AllPokemonsRepo {
     order?: string,
     search?: string,
   ) {
-    let filter: any = {};
+    let filter: FilterQuery<Pokemon> = {};
     if (search) {
       filter.name = { $regex: search, $options: 'i' };
     }
