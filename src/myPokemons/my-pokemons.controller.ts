@@ -35,8 +35,8 @@ export class MyPokemonsController {
     return this.service.getById(Number(id));
   }
 
-  @Post()
-  async create(@Body() pokemon: CreateMyPokemonDto): Promise<Pokemon> {
-    return this.service.create(pokemon);
-  }
+  // @Post()
+  // async create(@Body() pokemon: CreateMyPokemonDto): Promise<Pokemon> {
+  //   return this.service.create(pokemon);
+  // }
 }
