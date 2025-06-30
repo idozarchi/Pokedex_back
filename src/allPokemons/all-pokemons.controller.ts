@@ -4,41 +4,12 @@ import {
   Param,
   Query,
   NotFoundException,
-  InternalServerErrorException,
-  BadRequestException,
   Logger,
 } from '@nestjs/common';
 import { AllPokemonsService } from './all-pokemons.service';
 import { Pokemon } from '../types/pokemon.types';
-
-enum ControllerErrorType {
-  CastError = 'CastError',
-  ValidationError = 'ValidationError',
-  NotFoundException = 'NotFoundException',
-}
-
-function handleControllerError(
-  error: Error,
-  logger: Logger,
-  notFoundMsg?: string,
-  badRequestMsg?: string,
-  internalMsg?: string,
-): never {
-  logger.error(error.message, error.stack);
-  switch (error.name) {
-    case ControllerErrorType.CastError:
-    case ControllerErrorType.ValidationError:
-      throw new BadRequestException(
-        badRequestMsg || 'Invalid request parameters',
-      );
-    case ControllerErrorType.NotFoundException:
-      throw new NotFoundException(notFoundMsg || 'Resource not found');
-    default:
-      throw new InternalServerErrorException(
-        internalMsg || 'Internal server error',
-      );
-  }
-}
+import { ControllerErrorType } from '../common/controller-error-type.enum';
+import { handleControllerError } from '../common/handle-controller-error';
 
 @Controller('all-pokemons')
 export class AllPokemonsController {
@@ -55,13 +26,17 @@ export class AllPokemonsController {
     @Query('search') search?: string,
   ): Promise<Pokemon[]> {
     try {
-      return await this.service.getAll(
+      const result = await this.service.getAll(
         limit ? Number(limit) : undefined,
         offset ? Number(offset) : undefined,
         sort,
         order,
         search,
       );
+      this.logger.log(
+        `Fetched all pokemons (count: ${result.length}) with params: limit=${limit}, offset=${offset}, sort=${sort}, order=${order}, search=${search}`,
+      );
+      return result;
     } catch (error) {
       handleControllerError(
         error,
@@ -77,6 +52,7 @@ export class AllPokemonsController {
   async count(): Promise<{ count: number }> {
     try {
       const count = await this.service.count();
+      this.logger.log(`Fetched pokemons count: ${count}`);
       return { count };
     } catch (error) {
       handleControllerError(
@@ -96,6 +72,7 @@ export class AllPokemonsController {
       if (!pokemon) {
         throw new NotFoundException(`Pokemon with id ${id} not found`);
       }
+      this.logger.log(`Fetched pokemon with id: ${id}`);
       return pokemon;
     } catch (error) {
       handleControllerError(
