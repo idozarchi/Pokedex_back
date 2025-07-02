@@ -1,20 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, FilterQuery } from 'mongoose';
-import { BattleLogEntry } from './fight.schema';
-import { Pokemon } from 'src/types/pokemon.types';
-
-export type FightState = {
-  fightId: string;
-  userPokemon: Pokemon;
-  opponentPokemon: Pokemon;
-  userPokemonHP: number;
-  opponentPokemonHP: number;
-  turn: string;
-  battleLog: BattleLogEntry[];
-  winnerId: number | null;
-  status: string;
-};
+import { Model } from 'mongoose';
+import { FightState } from '../types/fight-state.types';
 
 @Injectable()
 export class FightRepo {

@@ -1,10 +1,10 @@
-import { FightState } from '../fight/fight.repo';
+import { FightState } from '../types/fight-state.types';
 
 export function updateFightAfterAttack(
   fight: FightState,
   newLife: number,
   logEntry: any,
-  isUserTurn: boolean
+  isUserTurn: boolean,
 ) {
   const defenderHPKey = isUserTurn ? 'opponentPokemonHP' : 'userPokemonHP';
 
@@ -16,7 +16,9 @@ export function updateFightAfterAttack(
 
   if (newLife <= 0) {
     updatedFight.status = 'finished';
-    updatedFight.winnerId = (isUserTurn ? fight.userPokemon : fight.opponentPokemon).id;
+    updatedFight.winnerId = (
+      isUserTurn ? fight.userPokemon : fight.opponentPokemon
+    ).id;
   }
 
   return updatedFight;

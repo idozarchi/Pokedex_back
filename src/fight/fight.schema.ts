@@ -19,7 +19,6 @@ export const FightSchema = new Schema({
     type: [
       {
         turn: String,
-        move: String,
         damage: Number,
         result: String,
         timestamp: Date,

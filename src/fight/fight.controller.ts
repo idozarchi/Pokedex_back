@@ -3,7 +3,22 @@ import { FightService } from './fight.service';
 import { StartFightDto } from './dto/start-fight.dto';
 import { AttackDto } from './dto/attack.dto';
 import { CatchDto } from './dto/catch.dto';
-import { handleControllerError } from '../common/handle-controller-error';
+
+function handleControllerError(
+  error: any,
+  logger: Logger,
+  context?: string,
+  validationMsg?: string,
+  generalMsg?: string,
+) {
+  if (error?.name === 'ValidationError' && validationMsg) {
+    logger.warn(`${validationMsg}: ${error.message}`);
+  } else if (generalMsg) {
+    logger.error(`${generalMsg}: ${error.message}`);
+  } else {
+    logger.error(error.message);
+  }
+}
 
 @Controller('fight')
 export class FightController {
@@ -23,6 +38,7 @@ export class FightController {
         'Invalid start fight parameters',
         'Failed to start fight',
       );
+      throw error;
     }
   }
 
@@ -38,6 +54,7 @@ export class FightController {
         'Invalid attack parameters',
         'Failed to process attack',
       );
+      throw error;
     }
   }
 
@@ -53,6 +70,7 @@ export class FightController {
         'Invalid catch parameters',
         'Failed to process catch',
       );
+      throw error;
     }
   }
 }
