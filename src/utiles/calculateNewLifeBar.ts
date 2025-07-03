@@ -1,7 +1,7 @@
 export function calculateNewLifeBar(
   power: number,
   currentLife: number,
-  maxLife: number
+  maxLife: number,
 ): number {
   const baseDamage = (power / 100) * (maxLife * 0.25);
   const randomFactor = Math.random() * (maxLife * 0.05);

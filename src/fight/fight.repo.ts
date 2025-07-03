@@ -23,8 +23,4 @@ export class FightRepo {
       .findOneAndUpdate({ fightId }, update, { new: true })
       .exec();
   }
-
-  async deleteFight(fightId: string) {
-    return this.fightModel.deleteOne({ fightId }).exec();
-  }
 }
