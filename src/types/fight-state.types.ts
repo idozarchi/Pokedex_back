@@ -1,5 +1,5 @@
 import { BattleLogEntry } from '../fight/fight.schema';
-import { Pokemon } from './pokemon.types';
+import { Pokemon } from '../schemas/pokemon.schema';
 
 export type FightState = {
   fightId: string;
