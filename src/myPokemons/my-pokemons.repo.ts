@@ -4,10 +4,10 @@ import { Model, FilterQuery } from 'mongoose';
 import { Pokemon } from '../types/pokemon.types';
 
 @Injectable()
-export class AllPokemonsRepo {
+export class MyPokemonsRepo {
   constructor(
-    @InjectModel('AllPokemon')
-    private readonly allPokemonModel: Model<Pokemon>,
+    @InjectModel('MyPokemon')
+    private readonly myPokemonModel: Model<Pokemon>,
   ) {}
 
   async findAll(
@@ -21,7 +21,7 @@ export class AllPokemonsRepo {
     if (search) {
       filter.name = { $regex: search, $options: 'i' };
     }
-    let query = this.allPokemonModel.find(filter);
+    let query = this.myPokemonModel.find(filter);
     if (sort) {
       const sortOrder = order === 'desc' ? -1 : 1;
       query = query.sort({ [sort]: sortOrder });
@@ -32,10 +32,15 @@ export class AllPokemonsRepo {
   }
 
   async findById(id: number) {
-    return this.allPokemonModel.findOne({ id }).exec();
+    return this.myPokemonModel.findOne({ id }).exec();
   }
 
   async count() {
-    return this.allPokemonModel.countDocuments().exec();
+    return this.myPokemonModel.countDocuments().exec();
+  }
+
+  async create(pokemon: Partial<Pokemon>) {
+    const created = new this.myPokemonModel(pokemon);
+    return created.save();
   }
 }
