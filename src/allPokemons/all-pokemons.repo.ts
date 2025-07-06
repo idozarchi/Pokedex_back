@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, FilterQuery } from 'mongoose';
-import { Pokemon } from '../schemas/pokemon.schema'; // <-- Use the schema class
+import { Pokemon } from '../schemas/pokemon.schema';
 
 @Injectable()
 export class AllPokemonsRepo {
   constructor(
-    @InjectModel(Pokemon.name)
+    @InjectModel('AllPokemon') // <-- Use the same name as in your module registration
     private readonly allPokemonModel: Model<Pokemon>,
   ) {}
 

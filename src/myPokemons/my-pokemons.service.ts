@@ -25,6 +25,7 @@ export class MyPokemonsService {
   }
 
   async create(pokemon: Partial<Pokemon>): Promise<Pokemon> {
+    console.log('Pokemon ID: ', pokemon.id);
     return this.repo.create(pokemon);
   }
 }
