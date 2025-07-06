@@ -13,6 +13,6 @@ import { MyPokemonsController } from './my-pokemons.controller';
   ],
   providers: [MyPokemonsRepo, MyPokemonsService],
   controllers: [MyPokemonsController],
-  exports: [MyPokemonsService],
+  exports: [MyPokemonsRepo, MyPokemonsService], // <-- Export both!
 })
 export class MyPokemonsModule {}

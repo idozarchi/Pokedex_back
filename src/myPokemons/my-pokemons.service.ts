@@ -28,4 +28,8 @@ export class MyPokemonsService {
     console.log('Pokemon ID: ', pokemon.id);
     return this.repo.create(pokemon);
   }
+
+  async findManyByIds(ids: number[]): Promise<Pokemon[]> {
+    return this.repo.findManyByIds(ids);
+  }
 }

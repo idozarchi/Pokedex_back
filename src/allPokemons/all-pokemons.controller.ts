@@ -24,19 +24,24 @@ export class AllPokemonsController {
     @Query('sort') sort?: string,
     @Query('order') order?: string,
     @Query('search') search?: string,
-  ): Promise<Pokemon[]> {
+  ): Promise<{ pokemons: Pokemon[]; ownedIds: number[] }> {
     try {
-      const result = await this.service.getAll(
+      const pokemons = await this.service.getAll(
         limit ? Number(limit) : undefined,
         offset ? Number(offset) : undefined,
         sort,
         order,
         search,
       );
+
+      const ids = pokemons.map((p) => p.id);
+
+      const ownedIds = await this.service.getOwnedIds(ids);
+
       this.logger.log(
-        `Fetched all pokemons (count: ${result.length}) with params: limit=${limit}, offset=${offset}, sort=${sort}, order=${order}, search=${search}`,
+        `Fetched all pokemons (count: ${pokemons.length}) with params: limit=${limit}, offset=${offset}, sort=${sort}, order=${order}, search=${search}`,
       );
-      return result;
+      return { pokemons, ownedIds };
     } catch (error) {
       handleControllerError(
         error,

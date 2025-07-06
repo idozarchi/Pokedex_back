@@ -43,4 +43,11 @@ export class MyPokemonsRepo {
     const created = new this.myPokemonModel(pokemon);
     return created.save();
   }
+
+  async findManyByIds(ids: number[]): Promise<Pokemon[]> {
+    return this.myPokemonModel
+      .find({ id: { $in: ids } })
+      .lean()
+      .exec();
+  }
 }

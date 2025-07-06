@@ -8,11 +8,17 @@ export function calculateNewLifeBar(
   const power = attacker.power ?? 50;
   const maxLife = defender.HP ?? 100;
 
-  const basePercent = 0.18 + (power / 100) * 0.17; // 18% to 35% of maxLife
-  const baseDamage = maxLife * basePercent;
-  const randomFactor = Math.random() * (maxLife * 0.05); // up to 5% of maxLife
-  const damage = Math.max(1, Math.round(baseDamage + randomFactor));
-  const newLife = Math.max(0, currentLife - damage);
+  if (Math.random() < 0.15) {
+    return currentLife;
+  }
 
-  return Math.round(newLife);
+  const baseDamage = maxLife * 0.1 + power * 0.4;
+
+  const randomFactor = 0.9 + Math.random() * 0.2;
+  let damage = Math.round(baseDamage * randomFactor);
+
+  damage = Math.max(1, Math.min(damage, Math.round(maxLife * 0.4)));
+
+  const newLife = Math.max(0, currentLife - damage);
+  return newLife;
 }
