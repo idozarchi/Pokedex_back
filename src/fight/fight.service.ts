@@ -102,6 +102,10 @@ export class FightService {
       isUserTurn,
     );
 
+    if (isUserTurn && defenderHPKey === 'opponentPokemonHP' && newLife <= 0) {
+      await this.myPokemonsService.create(fight.opponentPokemon);
+    }
+
     await this.fightRepo.updateFight(dto.fightId, updatedFight);
 
     return {
