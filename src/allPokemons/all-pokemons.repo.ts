@@ -22,7 +22,9 @@ export class AllPokemonsRepo {
     if (search) {
       filter.name = { $regex: search, $options: 'i' };
     }
-    const sortObj = sort ? { [sort]: order === 'desc' ? -1 : 1 } : {};
+    const sortObj: Record<string, 1 | -1> = sort
+      ? { [sort]: order === 'desc' ? -1 : 1 }
+      : {};
 
     return this.allPokemonModel
       .find(filter)

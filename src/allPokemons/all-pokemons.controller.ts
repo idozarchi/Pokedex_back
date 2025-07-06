@@ -1,6 +1,14 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  ValidationPipe,
+  UsePipes,
+} from '@nestjs/common';
 import { AllPokemonsService } from './all-pokemons.service';
 import { Pokemon } from '../types/pokemon.types';
+import { GetAllPokemonsDto } from './dto/get-all-pokemons.dto';
 
 export enum PokemonSortField {
   Name = 'name',
@@ -19,19 +27,14 @@ export class AllPokemonsController {
   constructor(private readonly service: AllPokemonsService) {}
 
   @Get()
-  async getAll(
-    @Query('limit') limit?: number,
-    @Query('offset') offset?: number,
-    @Query('sort') sort?: PokemonSortField,
-    @Query('order') order?: SortOrder,
-    @Query('search') search?: string,
-  ): Promise<Pokemon[]> {
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async getAll(@Query() query: GetAllPokemonsDto): Promise<Pokemon[]> {
     return this.service.getAll(
-      limit ? Number(limit) : undefined,
-      offset ? Number(offset) : undefined,
-      sort,
-      order,
-      search,
+      query.limit,
+      query.offset,
+      query.sort,
+      query.order,
+      query.search,
     );
   }
 
