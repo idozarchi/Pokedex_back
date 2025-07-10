@@ -1,7 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Pokemon } from '../schemas/pokemon.schema'; // Use the schema for correct typing
+import { Model, FilterQuery } from 'mongoose';
+import { Pokemon } from '../schemas/pokemon.schema';
+
+export type MongoSortOrder = 1 | -1;
+
+export enum PokemonSortField {
+  Name = 'name',
+  PowerLevel = 'powerLevel',
+  HP = 'HP',
+  Height = 'height',
+  Weight = 'weight',
+  Speed = 'speed',
+  // Add more fields as needed
+}
+
+export enum SortOrder {
+  Asc = 'asc',
+  Desc = 'desc',
+}
 
 @Injectable()
 export class AllPokemonsRepo {
@@ -13,17 +30,16 @@ export class AllPokemonsRepo {
   async findAll(
     limit?: number,
     offset?: number,
-    sort?: string,
-    order?: string,
+    sort?: PokemonSortField,
+    order?: SortOrder,
     search?: string,
   ): Promise<Omit<Pokemon, keyof Document>[]> {
-    // Return plain objects, not Mongoose docs
-    const filter: Record<string, any> = {};
+    const filter: FilterQuery<Pokemon> = {};
     if (search) {
       filter.name = { $regex: search, $options: 'i' };
     }
-    const sortObj: Record<string, 1 | -1> = sort
-      ? { [sort]: order === 'desc' ? -1 : 1 }
+    const sortObj: Record<string, MongoSortOrder> = sort
+      ? { [sort]: order === SortOrder.Desc ? -1 : 1 }
       : {};
 
     return this.allPokemonModel
