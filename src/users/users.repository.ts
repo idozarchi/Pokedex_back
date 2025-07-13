@@ -9,8 +9,8 @@ export class UsersRepository {
   constructor(
     @InjectModel('User')
     private readonly userModel: Model<User>,
-    @InjectModel('allPokemon')
-    private readonly pokemonModel: Model<Pokemon>,
+    @InjectModel('AllPokemon')
+    private readonly allPokemonModel: Model<Pokemon>,
   ) {}
 
   async findById(userId: string) {
@@ -32,10 +32,11 @@ export class UsersRepository {
 
   async getUserPokemons(user: User) {
     if (!user.ownedPokemons || user.ownedPokemons.length === 0) {
+      console.log('No owned Pokemons found for user:', user.userId);
       return [];
     }
-    return this.pokemonModel
-      .find({ userId: { $in: user.ownedPokemons } })
+    return this.allPokemonModel
+      .find({ id: { $in: user.ownedPokemons } })
       .exec();
   }
 }

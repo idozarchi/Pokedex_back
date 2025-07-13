@@ -12,8 +12,8 @@ export class User extends Document {
   @Prop({ required: true, unique: true })
   email: string;
 
-  @Prop({ type: [String], default: [] })
-  ownedPokemons: string[];
+  @Prop({ type: [Number], default: [] })
+  ownedPokemons: number[];
 
   @Prop({ type: [String], default: [] })
   fights: string[];
