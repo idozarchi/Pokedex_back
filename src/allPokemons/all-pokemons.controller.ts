@@ -5,20 +5,25 @@ import {
   Query,
   NotFoundException,
   Logger,
+  UseGuards,
 } from '@nestjs/common';
 import { AllPokemonsService } from './all-pokemons.service';
 import { Pokemon } from '../types/pokemon.types';
-import { ControllerErrorType } from '../common/controller-error-type.enum';
 import { handleControllerError } from '../common/handle-controller-error';
+import { CognitoGuard } from '../auth/cognito.guard';
+import { UserExistsGuard } from 'src/auth/user-exists.guard';
+import { CurrentUser } from '../auth/current-user.decorator';
+import { User } from '../users/schemas/user.schema';
 
+@UseGuards(CognitoGuard, UserExistsGuard)
 @Controller('all-pokemons')
 export class AllPokemonsController {
   private readonly logger = new Logger(AllPokemonsController.name);
-
   constructor(private readonly service: AllPokemonsService) {}
 
   @Get()
   async getAll(
+    @CurrentUser() user: User,
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
     @Query('sort') sort?: string,
@@ -35,9 +40,7 @@ export class AllPokemonsController {
       );
 
       const ids = pokemons.map((p) => p.id);
-
-      const ownedIds = await this.service.getOwnedIds(ids);
-
+      const ownedIds = await this.service.getOwnedIds(ids, user);
       this.logger.log(
         `Fetched all pokemons (count: ${pokemons.length}) with params: limit=${limit}, offset=${offset}, sort=${sort}, order=${order}, search=${search}`,
       );
