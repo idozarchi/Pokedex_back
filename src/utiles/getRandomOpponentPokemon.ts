@@ -1,17 +1,17 @@
-import { MyPokemonsService } from '../myPokemons/my-pokemons.service';
 import { AllPokemonsService } from '../allPokemons/all-pokemons.service';
+import { User } from '../users/schemas/user.schema';
 
 export async function getRandomOpponentPokemon(
-  myPokemonsService: MyPokemonsService,
-  allPokemonsService: AllPokemonsService
+  allPokemonsService: AllPokemonsService,
+  user?: User,
 ): Promise<any> {
-  const userPokemons = await myPokemonsService.getAll();
-  const userPokemonIds = userPokemons.map((p) => p.id);
   const allPokemons = await allPokemonsService.getAll();
 
+  const userPokemonIds = user?.ownedPokemons || [];
   const availableOpponents = allPokemons.filter(
     (p) => !userPokemonIds.includes(p.id),
   );
+
   if (availableOpponents.length === 0) {
     throw new Error('No available opponent pokemons found');
   }

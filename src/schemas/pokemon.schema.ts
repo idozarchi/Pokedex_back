@@ -1,9 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-// This schema is generic and can be used for both collections.
-// The collection will be specified in each module via MongooseModule.forFeature.
-
 @Schema()
 export class Pokemon extends Document {
   @Prop({ required: true, unique: true })

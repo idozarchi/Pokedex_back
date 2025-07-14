@@ -5,22 +5,24 @@ import {
 } from '@nestjs/common';
 import { StartFightDto } from './dto/start-fight.dto';
 import { AttackDto } from './dto/attack.dto';
-import { CatchDto } from './dto/catch.dto';
+import { CatchDto } from './dto/attack.dto';
 import { FightRepo } from './fight.repo';
 import { FightState } from '../types/fight-state.types';
 import { randomUUID } from 'crypto';
-import { MyPokemonsService } from '../myPokemons/my-pokemons.service';
 import { AllPokemonsService } from '../allPokemons/all-pokemons.service';
-import { calculateNewLifeBar } from '../utiles/calculateNewLifeBar';
-import { updateFightAfterAttack } from '../utiles/updateFightAfterAttack';
+import { UsersService } from '../users/users.service';
+import { User } from '../users/schemas/user.schema';
+import { Pokemon } from '../schemas/pokemon.schema';
 import { getRandomOpponentPokemon } from '../utiles/getRandomOpponentPokemon';
+import { handleCatchPokemon } from '../utiles/handleSuccessfulCatch';
+import { handleAttack } from '../utiles/handleAttack';
 
 @Injectable()
 export class FightService {
   constructor(
     private readonly fightRepo: FightRepo,
-    private readonly myPokemonsService: MyPokemonsService,
     private readonly allPokemonsService: AllPokemonsService,
+    private readonly usersService: UsersService,
   ) {}
 
   private async getActiveFightOrThrow(fightId: string): Promise<FightState> {
@@ -34,19 +36,25 @@ export class FightService {
     return fight;
   }
 
-  async startFight(dto: StartFightDto) {
-    const userPokemon = await this.myPokemonsService.getById(dto.userPokemonId);
+  async startFight(dto: StartFightDto, user: User) {
+    if (!user.ownedPokemons.includes(dto.userPokemonId)) {
+      throw new NotFoundException('User does not own this pokemon');
+    }
+
+    const userPokemon = await this.allPokemonsService.getById(
+      dto.userPokemonId,
+    );
     if (!userPokemon) {
-      throw new NotFoundException('User pokemon not found');
+      throw new NotFoundException('Pokemon not found');
     }
 
     const opponentPokemon = await getRandomOpponentPokemon(
-      this.myPokemonsService,
       this.allPokemonsService,
+      user,
     );
 
-    const userPokemonHP = userPokemon.HP || userPokemon.HP || 100;
-    const opponentPokemonHP = 100;
+    const userPokemonHP = userPokemon.HP || 100;
+    const opponentPokemonHP = opponentPokemon.HP || 100;
 
     const turn =
       (userPokemon.speed ?? 0) > (opponentPokemon.speed ?? 0)
@@ -56,8 +64,8 @@ export class FightService {
     const fightId = randomUUID();
     const fightState: FightState = {
       fightId,
-      userPokemon: userPokemon,
-      opponentPokemon: opponentPokemon,
+      userPokemon: userPokemon as Pokemon,
+      opponentPokemon: opponentPokemon as Pokemon,
       userPokemonHP,
       opponentPokemonHP,
       turn,
@@ -69,6 +77,9 @@ export class FightService {
 
     await this.fightRepo.createFight(fightState);
 
+    const updatedFights = [...user.fights, fightId];
+    await this.usersService.update(user.userId, { fights: updatedFights });
+
     return {
       fightId,
       user: userPokemon,
@@ -77,131 +88,42 @@ export class FightService {
     };
   }
 
-  async attack(dto: AttackDto) {
+  async attack(dto: AttackDto, user: User) {
     const fight = await this.getActiveFightOrThrow(dto.fightId);
 
-    const isUserTurn = fight.turn === 'user';
-    const attacker = isUserTurn ? fight.userPokemon : fight.opponentPokemon;
-    const defender = isUserTurn ? fight.opponentPokemon : fight.userPokemon;
-    const defenderHPKey = isUserTurn ? 'opponentPokemonHP' : 'userPokemonHP';
-
-    const currentLife = fight[defenderHPKey];
-    const newLife = calculateNewLifeBar(attacker, defender, currentLife);
-
-    const logEntry = {
-      turn: fight.turn,
-      damage: currentLife - newLife,
-      result: newLife <= 0 ? 'KO' : 'hit',
-      timestamp: new Date(),
-    };
-
-    const updatedFight = updateFightAfterAttack(
+    return await handleAttack(
       fight,
-      newLife,
-      logEntry,
-      isUserTurn,
+      dto,
+      this.fightRepo,
+      this.usersService,
+      user,
     );
-
-    if (isUserTurn && defenderHPKey === 'opponentPokemonHP' && newLife <= 0) {
-      await this.myPokemonsService.create(fight.opponentPokemon);
-    }
-
-    await this.fightRepo.updateFight(dto.fightId, updatedFight);
-
-    return {
-      lifebar: newLife,
-      turn: updatedFight.turn,
-      log: logEntry,
-      status: updatedFight.status || fight.status,
-      winnerId: updatedFight.winnerId,
-    };
   }
 
-  async catchPokemon(dto: CatchDto) {
+  async catchPokemon(dto: CatchDto, user: User) {
     const fight = await this.getActiveFightOrThrow(dto.fightId);
 
-    if (fight.turn !== 'user') {
-      throw new BadRequestException(
-        'Only the user can attempt to catch the Pokémon on their turn',
-      );
-    }
-
-    if (fight.catchAttempts >= 3) {
-      fight.status = 'finished';
-      fight.winnerId = fight.opponentPokemon.id;
-      await this.fightRepo.updateFight(dto.fightId, fight);
-      return {
-        status: 'finished',
-        winnerId: fight.opponentPokemon.id,
-        message: 'You have used all your catch attempts. You lost the fight.',
-      };
-    }
-    fight.catchAttempts += 1;
-
-    const maxHP = fight.opponentPokemon.HP || fight.opponentPokemon.HP || 100;
-    const currentHP = fight.opponentPokemonHP;
-    const hpPercent = (currentHP / maxHP) * 100;
-    if (hpPercent > 30) {
-      if (fight.catchAttempts >= 3) {
-        fight.status = 'finished';
-        fight.winnerId = fight.opponentPokemon.id;
-        await this.fightRepo.updateFight(dto.fightId, fight);
-        return {
-          status: 'finished',
-          winnerId: fight.opponentPokemon.id,
-          message: 'You have used all your catch attempts. You lost the fight.',
-        };
-      } else {
-        await this.fightRepo.updateFight(dto.fightId, fight);
-        return {
-          status: 'in-progress',
-          attemptsLeft: 3 - fight.catchAttempts,
-          message: 'Catch failed! The opponent Pokémon has too much HP!',
-        };
-      }
-    }
-
-    const catchSuccess = Math.random() >= 0.2;
-
-    if (catchSuccess) {
-      fight.status = 'finished';
-      fight.winnerId = fight.userPokemon.id;
-      await this.fightRepo.updateFight(dto.fightId, fight);
-
-      await this.myPokemonsService.create(fight.opponentPokemon);
-
-      return {
-        status: 'finished',
-        winnerId: fight.userPokemon.id,
-        message: 'Congratulations! You caught the Pokémon!',
-      };
-    } else {
-      if (fight.catchAttempts >= 3) {
-        fight.status = 'finished';
-        fight.winnerId = fight.opponentPokemon.id;
-        await this.fightRepo.updateFight(dto.fightId, fight);
-        return {
-          status: 'finished',
-          winnerId: fight.opponentPokemon.id,
-          message: 'You have used all your catch attempts. You lost the fight.',
-        };
-      } else {
-        await this.fightRepo.updateFight(dto.fightId, fight);
-        return {
-          status: 'in-progress',
-          attemptsLeft: 3 - fight.catchAttempts,
-          message: 'Catch failed! Try again.',
-        };
-      }
-    }
+    return await handleCatchPokemon(
+      fight,
+      dto,
+      this.fightRepo,
+      this.usersService,
+      user,
+    );
   }
 
-  async switchUserPokemon(fightId: string, newPokemonId: number) {
+  async switchUserPokemon(fightId: string, newPokemonId: number, user: User) {
     const fight = await this.fightRepo.getFight(fightId);
     if (!fight) throw new NotFoundException('Fight not found');
-    const newPokemon = await this.myPokemonsService.getById(newPokemonId);
+
+    if (!user.ownedPokemons.includes(newPokemonId)) {
+      throw new NotFoundException('User does not own this pokemon');
+    }
+
+    const newPokemon = await this.allPokemonsService.getById(newPokemonId);
     if (!newPokemon) throw new NotFoundException('Pokemon not found');
-    fight.userPokemon = newPokemon;
+
+    fight.userPokemon = newPokemon as Pokemon;
     fight.userPokemonHP = newPokemon.HP ?? 100;
     await this.fightRepo.updateFight(fightId, fight);
     return { success: true };
