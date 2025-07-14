@@ -73,4 +73,11 @@ export class FightController {
       throw error;
     }
   }
+
+  @Post('switch-pokemon')
+  async switchPokemon(
+    @Body() body: { fightId: string; newPokemonId: number }
+  ) {
+    return this.service.switchUserPokemon(body.fightId, body.newPokemonId);
+  }
 }

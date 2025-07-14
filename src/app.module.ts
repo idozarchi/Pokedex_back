@@ -5,6 +5,7 @@ import { DatabaseModule } from './database/database.module';
 import { AllPokemonsModule } from './allPokemons/all-pokemons.module';
 import { MyPokemonsModule } from './myPokemons/my-pokemons.module';
 import { FightModule } from './fight/fight.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { FightModule } from './fight/fight.module';
     AllPokemonsModule,
     MyPokemonsModule,
     FightModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

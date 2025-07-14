@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { MyPokemonsRepo } from './my-pokemons.repo';
-import { Pokemon } from '../types/pokemon.types';
+import { Pokemon } from '../schemas/pokemon.schema';
 
 @Injectable()
 export class MyPokemonsService {
@@ -25,6 +25,11 @@ export class MyPokemonsService {
   }
 
   async create(pokemon: Partial<Pokemon>): Promise<Pokemon> {
+    console.log('Pokemon ID: ', pokemon.id);
     return this.repo.create(pokemon);
+  }
+
+  async findManyByIds(ids: number[]): Promise<Pokemon[]> {
+    return this.repo.findManyByIds(ids);
   }
 }

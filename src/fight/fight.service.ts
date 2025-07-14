@@ -85,10 +85,8 @@ export class FightService {
     const defender = isUserTurn ? fight.opponentPokemon : fight.userPokemon;
     const defenderHPKey = isUserTurn ? 'opponentPokemonHP' : 'userPokemonHP';
 
-    const maxLife = defender.HP || defender.HP || 100;
     const currentLife = fight[defenderHPKey];
-    const power = attacker.power || attacker.powerLevel || 50;
-    const newLife = calculateNewLifeBar(power, currentLife, maxLife);
+    const newLife = calculateNewLifeBar(attacker, defender, currentLife);
 
     const logEntry = {
       turn: fight.turn,
@@ -103,6 +101,10 @@ export class FightService {
       logEntry,
       isUserTurn,
     );
+
+    if (isUserTurn && defenderHPKey === 'opponentPokemonHP' && newLife <= 0) {
+      await this.myPokemonsService.create(fight.opponentPokemon);
+    }
 
     await this.fightRepo.updateFight(dto.fightId, updatedFight);
 
@@ -192,5 +194,16 @@ export class FightService {
         };
       }
     }
+  }
+
+  async switchUserPokemon(fightId: string, newPokemonId: number) {
+    const fight = await this.fightRepo.getFight(fightId);
+    if (!fight) throw new NotFoundException('Fight not found');
+    const newPokemon = await this.myPokemonsService.getById(newPokemonId);
+    if (!newPokemon) throw new NotFoundException('Pokemon not found');
+    fight.userPokemon = newPokemon;
+    fight.userPokemonHP = newPokemon.HP ?? 100;
+    await this.fightRepo.updateFight(fightId, fight);
+    return { success: true };
   }
 }

@@ -1,16 +1,18 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { MyPokemonSchema } from './my-pokemon.schema';
+import { Pokemon, PokemonSchema } from '../schemas/pokemon.schema';
 import { MyPokemonsRepo } from './my-pokemons.repo';
 import { MyPokemonsService } from './my-pokemons.service';
 import { MyPokemonsController } from './my-pokemons.controller';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: 'MyPokemon', schema: MyPokemonSchema }]),
+    MongooseModule.forFeature([
+      { name: 'MyPokemon', schema: PokemonSchema, collection: 'myPokemons' },
+    ]),
   ],
+  providers: [MyPokemonsRepo, MyPokemonsService],
   controllers: [MyPokemonsController],
-  providers: [MyPokemonsService, MyPokemonsRepo],
-  exports: [MyPokemonsService],
+  exports: [MyPokemonsRepo, MyPokemonsService], // <-- Export both!
 })
 export class MyPokemonsModule {}

@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, FilterQuery } from 'mongoose';
-import { Pokemon } from '../types/pokemon.types';
+import { Pokemon } from '../schemas/pokemon.schema';
 
 @Injectable()
 export class MyPokemonsRepo {
   constructor(
-    @InjectModel('MyPokemon')
+    @InjectModel('MyPokemon') // <-- Use the same name as in the module
     private readonly myPokemonModel: Model<Pokemon>,
   ) {}
 
@@ -42,5 +42,12 @@ export class MyPokemonsRepo {
   async create(pokemon: Partial<Pokemon>) {
     const created = new this.myPokemonModel(pokemon);
     return created.save();
+  }
+
+  async findManyByIds(ids: number[]): Promise<Pokemon[]> {
+    return this.myPokemonModel
+      .find({ id: { $in: ids } })
+      .lean()
+      .exec();
   }
 }

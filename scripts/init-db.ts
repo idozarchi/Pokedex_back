@@ -12,7 +12,7 @@ async function initDb() {
   const collections = await db.db!.listCollections().toArray();
   const collectionNames = collections.map((c) => c.name);
 
-  const requiredCollections = ['myPokemons', 'allPokemons', 'fights'];
+  const requiredCollections = ['myPokemons', 'allPokemons', 'fights', 'users'];
 
   for (const name of requiredCollections) {
     if (!collectionNames.includes(name)) {
