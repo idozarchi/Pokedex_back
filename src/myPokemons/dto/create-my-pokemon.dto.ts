@@ -7,6 +7,9 @@ export class CreateMyPokemonDto {
   @IsString()
   name: string;
 
+  @IsInt()
+  power: number;
+
   @IsString()
   @IsOptional()
   image?: string;

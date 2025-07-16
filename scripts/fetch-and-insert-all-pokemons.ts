@@ -50,6 +50,7 @@ async function main() {
       category: details.types[0]?.type.name,
       abilities: details.abilities.map((a: any) => a.ability.name),
       speed: getStat(details.stats, 'speed'),
+      power: getStat(details.stats, 'attack'),
     };
     await AllPokemon.updateOne(
       { id: pokemon.id },
