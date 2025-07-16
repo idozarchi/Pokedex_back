@@ -1,9 +1,16 @@
-import { Controller, Post, Body, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Logger,
+  BadRequestException,
+} from '@nestjs/common';
 import { FightService } from './fight.service';
 import { StartFightDto } from './dto/start-fight.dto';
 import { AttackDto } from './dto/attack.dto';
 import { CatchDto } from './dto/catch.dto';
-import { handleControllerError } from '../common/handle-controller-error';
+import { SwitchPokemonDto } from './dto/switch-pokemon.dto';
+import { handleControllerError } from '../utiles/handleControllerError';
 
 @Controller('fight')
 export class FightController {
@@ -23,6 +30,7 @@ export class FightController {
         'Invalid start fight parameters',
         'Failed to start fight',
       );
+      throw new BadRequestException('Failed to start fight');
     }
   }
 
@@ -38,6 +46,7 @@ export class FightController {
         'Invalid attack parameters',
         'Failed to process attack',
       );
+      throw new BadRequestException('Failed to process attack');
     }
   }
 
@@ -53,6 +62,26 @@ export class FightController {
         'Invalid catch parameters',
         'Failed to process catch',
       );
+      throw new BadRequestException('Failed to catch Pokémon');
+    }
+  }
+
+  @Post('switch-pokemon')
+  async switchPokemon(@Body() dto: SwitchPokemonDto) {
+    try {
+      return await this.service.switchUserPokemon(
+        dto.fightId,
+        dto.newPokemonId,
+      );
+    } catch (error) {
+      handleControllerError(
+        error,
+        this.logger,
+        undefined,
+        'Invalid switch Pokémon parameters',
+        'Failed to switch Pokémon',
+      );
+      throw new BadRequestException('Failed to switch Pokémon');
     }
   }
 }
