@@ -126,6 +126,23 @@ export class FightService {
     fight.userPokemon = newPokemon as Pokemon;
     fight.userPokemonHP = newPokemon.HP ?? 100;
     await this.fightRepo.updateFight(fightId, fight);
-    return { success: true };
+
+    return {
+      success: true,
+      fight: fight,
+    };
+  }
+
+  async getFight(fightId: string, user: User) {
+    const fight = await this.fightRepo.getFight(fightId);
+    if (!fight) {
+      throw new NotFoundException('Fight not found');
+    }
+
+    if (!user.fights.includes(fightId)) {
+      throw new NotFoundException('Fight not found');
+    }
+
+    return fight;
   }
 }

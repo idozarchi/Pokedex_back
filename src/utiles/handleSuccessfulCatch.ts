@@ -35,23 +35,12 @@ export async function handleCatchPokemon(
   const hpPercent = (currentHP / maxHP) * 100;
 
   if (hpPercent > 30) {
-    if (fight.catchAttempts >= 3) {
-      fight.status = 'finished';
-      fight.winnerId = fight.opponentPokemon.id;
-      await fightRepo.updateFight(dto.fightId, fight);
-      return {
-        status: 'finished',
-        winnerId: fight.opponentPokemon.id,
-        message: 'You have used all your catch attempts. You lost the fight.',
-      };
-    } else {
-      await fightRepo.updateFight(dto.fightId, fight);
-      return {
-        status: 'in-progress',
-        attemptsLeft: 3 - fight.catchAttempts,
-        message: 'Catch failed! The opponent Pokémon has too much HP!',
-      };
-    }
+    await fightRepo.updateFight(dto.fightId, fight);
+    return {
+      status: 'in-progress',
+      attemptsLeft: 3 - fight.catchAttempts,
+      message: 'Catch failed! The opponent Pokémon has too much HP!',
+    };
   }
 
   const catchSuccess = Math.random() >= 0.2;

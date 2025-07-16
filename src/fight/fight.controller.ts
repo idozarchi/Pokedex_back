@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Logger, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Param,
+  Logger,
+  UseGuards,
+} from '@nestjs/common';
 import { FightService } from './fight.service';
 import { StartFightDto } from './dto/start-fight.dto';
 import { AttackDto } from './dto/attack.dto';
@@ -30,6 +38,22 @@ export class FightController {
   private readonly logger = new Logger(FightController.name);
 
   constructor(private readonly service: FightService) {}
+
+  @Get('details/:fightId')
+  async getFight(@Param('fightId') fightId: string, @CurrentUser() user: User) {
+    try {
+      return await this.service.getFight(fightId, user);
+    } catch (error) {
+      handleControllerError(
+        error,
+        this.logger,
+        undefined,
+        'Invalid fight ID',
+        'Failed to retrieve fight',
+      );
+      throw error;
+    }
+  }
 
   @Post('start')
   async startFight(@Body() dto: StartFightDto, @CurrentUser() user: User) {
