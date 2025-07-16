@@ -8,7 +8,7 @@ import { MyPokemonsController } from './my-pokemons.controller';
 @Module({
   imports: [
     MongooseModule.forFeature([
-      { name: 'MyPokemon', schema: PokemonSchema, collection: 'myPokemons' },
+      { name: Pokemon.name, schema: PokemonSchema, collection: 'myPokemons' },
     ]),
   ],
   providers: [MyPokemonsRepo, MyPokemonsService],

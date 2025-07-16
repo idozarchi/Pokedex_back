@@ -6,7 +6,7 @@ import { Pokemon } from '../schemas/pokemon.schema';
 @Injectable()
 export class MyPokemonsRepo {
   constructor(
-    @InjectModel('MyPokemon') // <-- Use the same name as in the module
+    @InjectModel('MyPokemon')
     private readonly myPokemonModel: Model<Pokemon>,
   ) {}
 

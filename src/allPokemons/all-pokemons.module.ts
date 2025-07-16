@@ -8,7 +8,7 @@ import { AllPokemonsController } from './all-pokemons.controller';
 @Module({
   imports: [
     MongooseModule.forFeature([
-      { name: 'AllPokemon', schema: PokemonSchema, collection: 'allPokemons' },
+      { name: Pokemon.name, schema: PokemonSchema, collection: 'allPokemons' },
     ]),
   ],
   providers: [AllPokemonsRepo, AllPokemonsService],
