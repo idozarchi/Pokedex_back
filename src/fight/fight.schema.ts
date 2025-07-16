@@ -1,32 +1,38 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { Pokemon } from '../schemas/pokemon.schema';
 
 export type BattleLogEntry = {
-  turn: string;
+  turn: Turn;
   damage: number;
   result: string;
   timestamp: Date;
 };
 
-@Schema({ collection: 'fights' })
+export enum Turn {
+  USER = 'user',
+  OPPONENT = 'opponent',
+}
+
+@Schema({ collection: 'fights', timestamps: true })
 export class Fight extends Document {
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true, unique: true, type: String })
   fightId: string;
 
-  @Prop({ required: true, type: Object })
-  userPokemon: any;
+  @Prop({ required: true, type: Pokemon })
+  userPokemon: Pokemon;
 
-  @Prop({ required: true, type: Object })
-  opponentPokemon: any;
+  @Prop({ required: true, type: Pokemon })
+  opponentPokemon: Pokemon;
 
-  @Prop({ required: true })
+  @Prop({ required: true, type: Number })
   userPokemonHP: number;
 
-  @Prop({ required: true })
+  @Prop({ required: true, type: Number })
   opponentPokemonHP: number;
 
-  @Prop({ required: true })
-  turn: string;
+  @Prop({ required: true, enum: Turn, type: String })
+  turn: Turn;
 
   @Prop({
     type: [
@@ -44,7 +50,7 @@ export class Fight extends Document {
   @Prop({ type: Number, default: null })
   winnerId: number | null;
 
-  @Prop({ default: 'in-progress' })
+  @Prop({ default: 'in-progress', type: String })
   status: string;
 }
 
