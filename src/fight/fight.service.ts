@@ -48,10 +48,21 @@ export class FightService {
       throw new NotFoundException('Pokemon not found');
     }
 
-    const opponentPokemon = await getRandomOpponentPokemon(
-      this.allPokemonsService,
-      user,
-    );
+    let opponentPokemon: Pokemon;
+    if (dto.opponentId) {
+      const specificOpponent = await this.allPokemonsService.getById(
+        dto.opponentId,
+      );
+      if (!specificOpponent) {
+        throw new NotFoundException('Opponent pokemon not found');
+      }
+      opponentPokemon = specificOpponent as Pokemon;
+    } else {
+      opponentPokemon = await getRandomOpponentPokemon(
+        this.allPokemonsService,
+        user,
+      );
+    }
 
     const userPokemonHP = userPokemon.HP || 100;
     const opponentPokemonHP = opponentPokemon.HP || 100;
