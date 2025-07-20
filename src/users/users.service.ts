@@ -23,7 +23,16 @@ export class UsersService {
     return this.usersRepository.update(userId, user);
   }
 
-  async getUserPokemons(user: User): Promise<Pokemon[]> {
-    return this.usersRepository.getUserPokemons(user);
+  async getUserPokemons(
+    user: User,
+    options?: {
+      sort?: string;
+      order?: 'asc' | 'desc';
+      limit?: number;
+      offset?: number;
+      search?: string;
+    },
+  ): Promise<Pokemon[]> {
+    return this.usersRepository.getUserPokemons(user, options);
   }
 }

@@ -5,6 +5,7 @@ import {
   Post,
   Body,
   Patch,
+  Query,
   UseGuards,
   BadRequestException,
   ConflictException,
@@ -92,10 +93,27 @@ export class UsersController {
   async getUserPokemons(
     @Param('userId') userId: string,
     @CurrentUser() user: User,
+    @Query('sort') sort?: string,
+    @Query('order') order?: 'asc' | 'desc',
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+    @Query('search') search?: string,
   ) {
     try {
-      this.logger.log(`Fetching pokemons for user: ${userId}`);
-      return await this.usersService.getUserPokemons(user);
+      this.logger.log(
+        `Fetching pokemons for user: ${userId} with sort: ${sort}, order: ${order}, search: ${search}`,
+      );
+
+      const limitNum = limit ? parseInt(limit, 10) : undefined;
+      const offsetNum = offset ? parseInt(offset, 10) : undefined;
+
+      return await this.usersService.getUserPokemons(user, {
+        sort,
+        order,
+        limit: limitNum,
+        offset: offsetNum,
+        search,
+      });
     } catch (error) {
       this.logger.error(
         `Error fetching pokemons for user: ${userId}`,

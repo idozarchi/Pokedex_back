@@ -30,13 +30,48 @@ export class UsersRepository {
     return this.userModel.updateOne({ userId }, user).exec();
   }
 
-  async getUserPokemons(user: User) {
+  async getUserPokemons(
+    user: User,
+    options?: {
+      sort?: string;
+      order?: 'asc' | 'desc';
+      limit?: number;
+      offset?: number;
+      search?: string;
+    },
+  ) {
     if (!user.ownedPokemons || user.ownedPokemons.length === 0) {
       console.log('No owned Pokemons found for user:', user.userId);
       return [];
     }
-    return this.allPokemonModel
-      .find({ id: { $in: user.ownedPokemons } })
-      .exec();
+
+    let query = this.allPokemonModel.find({ id: { $in: user.ownedPokemons } });
+
+    if (options?.search) {
+      const searchRegex = new RegExp(options.search, 'i');
+      query = query.find({
+        $or: [
+          { name: searchRegex },
+          { description: searchRegex },
+          { category: searchRegex },
+        ],
+      });
+    }
+
+    if (options?.sort && options?.order) {
+      const sortField = options.sort;
+      const sortDirection = options.order === 'desc' ? -1 : 1;
+      query = query.sort({ [sortField]: sortDirection });
+    }
+
+    if (options?.offset) {
+      query = query.skip(options.offset);
+    }
+
+    if (options?.limit) {
+      query = query.limit(options.limit);
+    }
+
+    return query.exec();
   }
 }
