@@ -50,18 +50,14 @@ export class UsersRepository {
     if (options?.search) {
       const searchRegex = new RegExp(options.search, 'i');
       query = query.find({
-        $or: [
-          { name: searchRegex },
-          { description: searchRegex },
-          { category: searchRegex },
-        ],
+        $or: [{ name: searchRegex }],
       });
     }
 
     if (options?.sort && options?.order) {
       const sortField = options.sort;
       const sortDirection = options.order === 'desc' ? -1 : 1;
-      query = query.sort({ [sortField]: sortDirection });
+      query = query.sort({ [sortField]: sortDirection, id: 1 });
     }
 
     if (options?.offset) {
